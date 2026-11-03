@@ -1,5 +1,7 @@
 # Slowly-Penpal-Archive-Skill
 
+[简体中文](README.md) | [English](README.en.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
+
 ## 起源
 > 认真封存每一份笔友关系。
 
@@ -86,9 +88,3 @@ A：回到 IDE／WorkBuddy，告诉 AI 新路径，再生成即可。
 
 ## 赞赏
 <img width="1920" height="1080" alt="更新专用keynote_副本 004" src="https://github.com/user-attachments/assets/b84194e5-e9d3-4149-81ae-f9d664d9f813" />
-
- 
-
-
-
-
