@@ -1,9 +1,15 @@
 ---
-name: slowly-offline-archive
+name: slowly-penpal-archive
 description: 将已保存的 Slowly 信件 PDF 增量整理为可搜索的离线档案馆，展示已有本地邮票、附件和笔友资料。用于手动 PDF 归档、离线读信、指定或切换资料目录、追加新信和索引更新。不获取线上信件。
+version: 1.0.0
+display_name: Slowly Penpal Archive
+display_name_en: Slowly Penpal Archive
+description_zh: 将已保存的 Slowly 信件 PDF 整理为可搜索、可翻阅的本地离线档案馆，支持增量追加新信，展示已有本地邮票、附件和笔友资料。需自行保存 PDF，不自动下载线上信件。
+description_en: Organize saved Slowly letter PDFs into a searchable local offline archive. Add new letters incrementally and view existing local stamps, attachments, and pen-pal profiles. Requires PDFs you have saved yourself; does not download letters from Slowly.
+author: Penghao Xiong
 ---
 
-# Slowly 离线信件归档
+# Slowly Penpal Archive
 
 这是由 IDE／WorkBuddy 执行的免费 skill。用户通过自然语言提供需求和资料路径；不要把编译原生应用、安装 Swift、启动服务或手动执行终端命令作为使用前提。
 
