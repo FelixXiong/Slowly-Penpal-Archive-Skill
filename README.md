@@ -44,9 +44,12 @@
 1. 解压skills ZIP，把整个 slowly-offline-archive 文件夹放到该工具配置的 skills 目录，或使用工具提供的本地技能导入功能。
 保留 SKILL.md 和 scripts/，不要只复制一个 Markdown 文件。
 2. 对支持 Skills 的办公工具（WorkBuddy、千问办公或豆包工作）或 IDE说：
-使用 slowly-offline-archive（slowly离线归档技能），把（你的信件保存路径）里的 PDF 整理成离线档案馆，保留原文件，生成后给我打开入口。
+
+> 使用 slowly-offline-archive（slowly离线归档技能），把（你的信件保存路径）里的 PDF 整理成离线档案馆，保留原文件，生成后给我打开入口。
+
 追加信件：
-用 Slowly 离线归档 skill，资料目录是（你的信件保存路径），把新信追加进已有档案。 
+
+> 用 Slowly 离线归档 skill，资料目录是（你的信件保存路径），把新信追加进已有档案。 
 
 首次运行仍需要可执行 Python 的宿主环境；若缺少 pypdf，AI 会按该环境允许的方式处理。
 
