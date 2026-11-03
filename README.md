@@ -1,18 +1,27 @@
 # Slowly-Penpal-Archive-Skill
 
 ## 起源
-认真封存每一份笔友关系。
-有些通信渐渐停下，有些笔友需要告别。但清理笔友列表之前，我们仍想留下那些认真写过、收到过的信。
+> 认真封存每一份笔友关系。
+
+有些通信渐渐停下，有些笔友需要告别。
+
+但清理笔友列表之前，我们仍想留下那些认真写过、收到过的信。
+
 如果你都下载了PDF之后，如何整理，并会看每一封信件，每一次的笔友关系？
+
 使用Slowly App 的朋友们都知道，如果不是Plus，我们的笔友位只有100个。
+
 如果当你开过了slowly的Plus，当到期，若不愿续充时，需要清理我们的笔友位。
+
 于是我做了这个skills。
 
 本skills：
 1. 不会替用户下载网页上的信件
 2. 把你保存的信件整理成一座可以搜索、翻阅的本地档案馆，让每一段通信都有地方安放。
+   
 此应用目前仅针对Slowly进行归档，其他类型可导出信件PDF的App，暂未尝试，欢迎尝试并在issue区进行反馈。
-使用前准备
+
+## 使用前准备
 进入Slowly网页端，先自行保存任意笔友的信件 PDF，每位笔友放一个文件夹，示例如下：
 ```
 信件目录/
@@ -32,13 +41,17 @@
 保存信件 PDF → 按笔友建立文件夹（同一笔友的多封信放在一起）→ 可选：让 AI 辅助规范文件名 → 让 skill 生成档案 → 打开阅读。
 
 ## 开始使用
-1. 解压skills ZIP，把整个 slowly-offline-archive 文件夹放到该工具配置的 skills 目录，或使用工具提供的本地技能导入功能。保留 SKILL.md 和 scripts/，不要只复制一个 Markdown 文件。
+1. 解压skills ZIP，把整个 slowly-offline-archive 文件夹放到该工具配置的 skills 目录，或使用工具提供的本地技能导入功能。
+保留 SKILL.md 和 scripts/，不要只复制一个 Markdown 文件。
 2. 对支持 Skills 的办公工具（WorkBuddy、千问办公或豆包工作）或 IDE说：
 使用 slowly-offline-archive（slowly离线归档技能），把（你的信件保存路径）里的 PDF 整理成离线档案馆，保留原文件，生成后给我打开入口。
 追加信件：
 用 Slowly 离线归档 skill，资料目录是（你的信件保存路径），把新信追加进已有档案。 
 
-首次运行仍需要可执行 Python 的宿主环境；若缺少 pypdf，AI 会按该环境允许的方式处理。首次获取依赖可能联网，归档和阅读流程不访问 Slowly。
+首次运行仍需要可执行 Python 的宿主环境；若缺少 pypdf，AI 会按该环境允许的方式处理。
+
+首次获取依赖可能联网，归档和阅读流程不访问 Slowly。
+
 生成后，打开本地 index.html 就能阅读，后续无需 AI 或本地服务保持运行。
 
 ## 生成结果
@@ -53,6 +66,7 @@
 
 ## 效果
 “笔友档案馆”：图片预览图：
+
  <img width="1440" height="1000" alt="01-信件列表" src="https://github.com/user-attachments/assets/a36b1725-bb47-465f-8345-772511a49c02" />
 <img width="1920" height="1080" alt="更新专用keynote_副本 002" src="https://github.com/user-attachments/assets/c26fa704-91a7-432c-af86-03447fffb644" />
  <img width="1920" height="1080" alt="更新专用keynote_副本 003" src="https://github.com/user-attachments/assets/195632ad-4681-450e-9e95-f1b345cd3767" />
