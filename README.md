@@ -54,8 +54,8 @@
 ## 效果
 “笔友档案馆”：图片预览图：
  <img width="1440" height="1000" alt="01-信件列表" src="https://github.com/user-attachments/assets/a36b1725-bb47-465f-8345-772511a49c02" />
- 
-
+<img width="1920" height="1080" alt="更新专用keynote_副本 002" src="https://github.com/user-attachments/assets/c26fa704-91a7-432c-af86-03447fffb644" />
+ <img width="1920" height="1080" alt="更新专用keynote_副本 003" src="https://github.com/user-attachments/assets/195632ad-4681-450e-9e95-f1b345cd3767" />
 
 ## 数据安全
 本skills不联网、不自动操作 Slowly 网页、不读取登录态、无需登录Slowly，只读取你已经保存的“信件 PDF”，用 pypdf 还原正文，产出一个可搜索的 SQLite 库和一个单文件、数据内嵌、双击即开的网页档案馆。 
@@ -64,9 +64,12 @@ pypdf：首次安装需联网，下载此依赖。
 
 ## 常见问题
 Q：换信件目录时怎么办？
+
 A：回到 IDE／WorkBuddy，告诉 AI 新路径，再生成即可。
 
 ## 赞赏
+<img width="1920" height="1080" alt="更新专用keynote_副本 004" src="https://github.com/user-attachments/assets/b84194e5-e9d3-4149-81ae-f9d664d9f813" />
+
  
 
 
