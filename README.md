@@ -1,6 +1,12 @@
-# Slowly-Penpal-Archive-Skill
-
-[简体中文](README.md) | [English](README.en.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [العربية](README.ar.md)
+<h1 align="center">Slowly-Penpal-Archive-Skill</h1>
+<p align="center">
+  <a href="README.md">简体中文</a> |
+  <a href="README.en.md">English</a> |
+  <a href="README.zh-TW.md">繁體中文</a> |
+  <a href="README.ja.md">日本語</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.ar.md">العربية</a>
+</p>
 
 ## 起源
 > 认真封存每一份笔友关系。
