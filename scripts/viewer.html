@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slowly 笔友档案馆 · 离线珍藏</title>
+<style>
+:root{
+  --paper:#f4eee1;
+  --paper-deep:#ece3d0;
+  --card:#fffdf8;
+  --ink:#2c241a;
+  --ink-2:#5c5140;
+  --muted:#8a7f6b;
+  --line:#e2d8c5;
+  --line-soft:#efe7d8;
+  --accent:#8a6d3b;
+  --accent-ink:#6f562c;
+  --accent-soft:#f6ecd8;
+  --in:#8a5a2b;
+  --out:#3f5f8a;
+  --live:#3f6b4a;
+  --live-soft:#e9f0e6;
+  --danger:#a4432f;
+  --shadow:0 10px 30px rgba(60,45,20,.10);
+  /* 顶部条的真实高度，由 app.js 量好后写进来；顶部条换行（窄窗）时侧栏才不会贴错位置 */
+  --topbar-h:68px;
+}
+*{box-sizing:border-box}
+/* body 只能是 min-height：写成 height:100% 时它的盒子只有一屏高，
+   顶部条与侧栏的 position:sticky 被关在这个盒子里，滚过一屏就跟着盒子底边一起滑走了 */
+html{height:100%}
+body{
+  min-height:100%;
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--accent-ink)}
+::selection{background:#e8d8b6}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:22px;
+  padding:14px 24px;background:rgba(63,58,47,.97);color:#f4efe3;
+  box-shadow:0 2px 14px rgba(0,0,0,.12);flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:240px}
+.seal{
+  width:38px;height:38px;border-radius:10px;background:#b08d4f;color:#2c241a;
+  display:grid;place-items:center;font-family:"Songti SC","STSong",serif;
+  font-size:20px;font-weight:700;letter-spacing:1px;
+}
+.brand h1{margin:0;font-size:16px;letter-spacing:1px;font-weight:600}
+.brand p{margin:2px 0 0;font-size:11.5px;color:#c9bfa8}
+.tabs{display:flex;gap:4px;background:rgba(0,0,0,.16);padding:4px;border-radius:10px}
+.tabs button{
+  border:0;background:transparent;color:#d8cfb9;padding:6px 16px;border-radius:7px;font-size:13px;
+}
+.tabs button.on{background:#f4efe3;color:#3f3a2f;font-weight:600}
+.tools{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tools input{
+  width:250px;padding:8px 12px;border-radius:9px;border:1px solid #6d6453;
+  background:#2f2b23;color:#f4efe3;font:inherit;outline:none;
+}
+.tools input::placeholder{color:#9b9382}
+.tools input:focus{border-color:#b08d4f}
+.tools button{
+  padding:8px 14px;border-radius:9px;border:1px solid #6d6453;background:#3f3a2f;color:#e9e1cf;font-size:12.5px;
+}
+.tools button:hover{background:#4a4437}
+.tools button:disabled{opacity:.55;cursor:default}
+
+/* ---------- layout ---------- */
+.layout{display:flex;min-height:calc(100vh - var(--topbar-h));align-items:flex-start}
+.sidebar{
+  width:276px;flex:none;padding:18px 14px 40px;position:sticky;top:var(--topbar-h);
+  max-height:calc(100vh - var(--topbar-h));overflow:auto;border-right:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,253,248,.55),rgba(255,253,248,0));
+}
+.pal{
+  display:flex;gap:11px;align-items:center;width:100%;text-align:left;
+  padding:10px 11px;border:1px solid transparent;border-radius:12px;background:transparent;margin-bottom:4px;
+}
+.pal:hover{background:rgba(255,253,248,.8)}
+.pal.on{background:var(--card);border-color:var(--line);box-shadow:0 3px 10px rgba(60,45,20,.06)}
+.pal img,.pal .ava{
+  width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:none;
+  background:var(--accent-soft);display:grid;place-items:center;color:var(--accent);font-size:15px;
+}
+.pal .meta{min-width:0;flex:1}
+.pal .name{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px}
+.pal .sub{font-size:11.5px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal .note{display:block;font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pal .note.bye{color:var(--accent-ink)}
+.pal .note.live{color:var(--live)}
+.pal .note.pub{color:#2c5580}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--danger);flex:none}
+.dot.bye{background:var(--accent)}
+.dot.live{background:var(--live)}
+.badge.farewell{background:var(--accent-soft);color:var(--accent-ink)}
+td .bye,.bye{color:var(--accent-ink)}
+td .live,.live{color:var(--live)}
+td .livetag{display:block;font-size:11px;color:var(--live);margin-top:2px}
+.badge.public{background:rgba(58,108,150,.14);color:#2c5580}
+td .pub{display:block;font-size:11px;color:#2c5580;margin-top:2px}
+td .note{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+/* 已注销账户：头像去色 + 灰调标记。这不是错误，只是这个人已经不在 Slowly 上了 */
+img.off{filter:grayscale(1);opacity:.62}
+.offtag{
+  display:inline-block;font-size:10.5px;line-height:1.7;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:0 8px;white-space:nowrap;
+}
+.pal .note.off{color:var(--muted)}
+.profile-top .offnote{font-size:11.5px;line-height:1.65;color:var(--ink-2)}
+.sidebar h2{
+  font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:600;margin:6px 10px 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.sidebar h2 select{
+  flex:1;min-width:0;font:inherit;font-size:11px;letter-spacing:0;font-weight:400;color:var(--ink-2);
+  padding:3px 6px;border:1px solid var(--line);border-radius:7px;background:var(--card);cursor:pointer;
+}
+.sidebar h2 select:hover{border-color:#d3c2a1;color:var(--accent-ink)}
+
+.main{flex:1;min-width:0;padding:20px 26px 60px}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.chips{display:flex;gap:6px;background:var(--paper-deep);padding:4px;border-radius:10px}
+.chip{border:0;background:transparent;padding:5px 13px;border-radius:7px;font-size:12.5px;color:var(--ink-2)}
+.chip.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 4px rgba(60,45,20,.08)}
+select{
+  padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--card);
+  color:var(--ink);font:inherit;font-size:12.5px;outline:none;
+}
+.count{margin-left:auto;font-size:12px;color:var(--muted)}
+.clear{border:0;background:none;color:var(--accent-ink);font-size:12px;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- letter cards ---------- */
+.list{display:flex;flex-direction:column;gap:12px;max-width:980px}
+.card{
+  position:relative;display:flex;gap:16px;align-items:flex-start;text-align:left;width:100%;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.card:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:#cfc0a4}
+.card .date{flex:none;width:96px;color:var(--ink-2)}
+.card .date b{display:block;font-size:15px;letter-spacing:.3px;color:var(--ink);font-weight:600}
+.card .date span{font-size:11.5px;color:var(--muted)}
+.card .body{flex:1;min-width:0}
+.card .line{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sender{font-weight:600;font-size:13.5px}
+.sender.in{color:var(--in)}
+.sender.out{color:var(--out)}
+.badge{
+  display:inline-block;background:var(--accent-soft);color:var(--accent-ink);
+  border-radius:6px;padding:1px 7px;font-size:11px;
+}
+.badge.read{background:rgba(46,143,90,.15);color:#1f6b45}
+.badge.unread{background:rgba(164,67,47,.14);color:var(--danger)}
+.badge.pending{background:rgba(120,110,95,.16);color:var(--muted)}
+.stampcard.on{outline:2px solid var(--accent);outline-offset:2px}
+.card .excerpt{color:var(--ink-2);font-size:13px;line-height:1.75;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .sub{margin-top:7px;font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.card .stampbox{flex:none;width:74px;text-align:center}
+.card .stampbox img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(60,45,20,.18))}
+.card .stampbox span{display:block;font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .stampbox .none{width:64px;height:64px;border:1px dashed var(--line);border-radius:8px;display:inline-block}
+
+/* ---------- stamps view ---------- */
+.stampgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;max-width:1080px}
+.stampcard{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 12px 12px;
+  text-align:center;transition:transform .12s,box-shadow .12s;
+}
+.stampcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stampcard img{width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(60,45,20,.2))}
+.stampcard .nm{margin-top:10px;font-size:12.5px;font-weight:600}
+.stampcard .sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ---------- archive view ---------- */
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:1080px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.stat b{display:block;font-family:"Songti SC","STSong",serif;font-size:28px;letter-spacing:1px}
+.stat span{font-size:11.5px;color:var(--muted);letter-spacing:1px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;max-width:1080px;margin-bottom:16px}
+.panel h3{margin:0 0 4px;font-size:14px;letter-spacing:1px}
+.panel .hint{font-size:11.5px;color:var(--muted);margin-bottom:14px}
+.bars{display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:6px}
+.bar{flex:1;max-width:64px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bar i{display:block;width:100%;background:linear-gradient(180deg,#c9a86a,#a9854a);border-radius:5px 5px 2px 2px;min-height:3px}
+.bar b{font-size:11px;color:var(--ink-2);font-weight:600}
+.bar span{font-size:10.5px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line-soft);text-align:left;font-size:12.5px;vertical-align:middle}
+th{font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td .who{display:flex;align-items:center;gap:9px;font-weight:600}
+td .who img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+td a{margin-right:10px;white-space:nowrap}
+.warn{color:var(--danger)}
+.ghost{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:3px 9px;font-size:11.5px}
+.ghost:hover{background:var(--accent-soft)}
+
+/* ---------- reader ---------- */
+.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:28px}
+.overlay[hidden]{display:none}
+.mask{position:absolute;inset:0;background:rgba(38,30,18,.42);backdrop-filter:blur(2px)}
+.paper{
+  position:relative;z-index:1;width:min(760px,100%);max-height:calc(100vh - 56px);overflow:auto;
+  background:var(--card);border-radius:16px;box-shadow:0 24px 60px rgba(30,20,5,.35);
+  padding:34px 42px 30px;
+}
+.paper::before{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;
+  background:repeating-linear-gradient(0deg,rgba(138,109,59,.035) 0 1px,transparent 1px 29px);
+}
+.icon-btn{
+  position:absolute;top:14px;right:14px;z-index:2;width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink-2);display:grid;place-items:center;
+}
+.icon-btn:hover{background:var(--accent-soft)}
+.paper-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.paper-head .who{font-size:18px;font-weight:600;letter-spacing:.5px}
+.paper-head .when{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.8}
+.paper-head .stamp{text-align:center;flex:none}
+.paper-head .stamp img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(60,45,20,.2))}
+.paper-head .stamp span{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.letter-body{margin-top:22px;font-family:"Songti SC","STSong","Noto Serif SC",serif;font-size:15.5px;line-height:2.05}
+.letter-body p{margin:0 0 14px;white-space:pre-wrap}
+.letter-figs{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.letter-figs img{max-width:100%;max-height:320px;border-radius:8px;border:1px solid var(--line)}
+.paper-foot{margin-top:22px;padding-top:12px;border-top:1px solid var(--line-soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.paper-foot .spacer{flex:1}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12.5px;text-decoration:none;
+}
+.btn:hover{background:var(--accent-soft);border-color:#d3c2a1}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff8ea}
+.btn.primary:hover{background:#7a5f33}
+.nav{display:flex;gap:6px}
+.nav button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--paper)}
+.nav button:disabled{opacity:.35;cursor:default}
+
+/* ---------- profile ---------- */
+.profile-paper{width:min(520px,100%)}
+.profile-top{display:flex;gap:16px;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.profile-top img,.profile-top .ava{width:74px;height:74px;border-radius:50%;object-fit:cover;border:2px solid var(--line);background:var(--accent-soft);display:grid;place-items:center;font-size:24px;color:var(--accent)}
+.profile-top h2{margin:0;font-size:20px;letter-spacing:1px}
+.profile-top p{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.byecheck{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;color:var(--accent-ink);margin:4px 0 6px;cursor:pointer}
+.byecheck input{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+.livecheck{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;color:var(--live);margin:4px 0 6px;cursor:pointer}
+.livecheck input{width:15px;height:15px;accent-color:var(--live);cursor:pointer}
+.livecheck .mut{color:var(--muted);font-size:11px}
+.livecheck.inline{margin:0;font-size:12.5px}
+.byecheck .mut{color:var(--muted);font-size:11px}
+.byecheck.inline{margin:0;font-size:12.5px}
+.ghost.info.on{background:var(--accent-soft);border-color:#d3c2a1;color:var(--accent-ink)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:16px 0}
+.fact{font-size:12.5px;color:var(--ink-2)}
+.fact b{display:block;font-size:10.5px;color:var(--muted);font-weight:500;letter-spacing:1px;margin-bottom:2px}
+.bio{margin-top:8px;font-family:"Songti SC","STSong",serif;font-size:14.5px;line-height:1.95;white-space:pre-wrap;color:var(--ink-2)}
+.profile-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+
+/* ---------- misc ---------- */
+.empty{padding:70px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;font-size:16px;color:var(--ink-2);margin-bottom:8px;font-family:"Songti SC",serif}
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;max-width:min(680px,90vw);
+  background:#3f3a2f;color:#f4efe3;padding:12px 18px;border-radius:10px;font-size:12.5px;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);white-space:pre-wrap;
+}
+.toast[hidden]{display:none}
+@media (max-width:900px){
+  .sidebar{width:220px}
+  .tools input{width:150px}
+  .paper{padding:26px 22px}
+  .brand p{display:none}
+}
+@media (max-width:720px){
+  .layout{display:block}
+  .sidebar{width:auto;position:static;max-height:none;display:flex;flex-wrap:wrap;overflow:visible;gap:6px;border-right:0;border-bottom:1px solid var(--line);padding:12px}
+  .sidebar h2{display:none}
+  .pal{width:auto;flex:none;margin:0}
+  .pal .sub,.pal .note{display:none}
+  .note{display:none}
+  .main{padding:16px}
+  .card .date{width:74px}
+}
+
+/* 离线单文件：保留完整版视觉，补齐窄屏与可访问性。 */
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.card .line{flex-wrap:wrap}.card .body,.paper-head>div:first-child{overflow-wrap:anywhere;min-width:0}
+.list-wide{max-width:1080px}.table-scroll{overflow-x:auto}.table-scroll table{min-width:760px}
+.table-scroll .who img,.table-scroll .who .ava{width:28px;height:28px;flex:none}
+.table-scroll .who .ava{border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.table-scroll td:last-child{min-width:130px}.table-scroll td a{display:inline-block;margin-top:6px;text-decoration:none}
+.image-missing{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.letter-body .hint{font-family:inherit;font-size:12px;color:var(--muted)}
+.profile-top>div{min-width:0;overflow-wrap:anywhere}.fact{overflow-wrap:anywhere}
+.stampcard .nm,.stampcard .sub{overflow-wrap:anywhere}
+.mask{border:0}.paper:focus{outline:none}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:720px){
+ .topbar{padding:12px 16px;gap:12px}.brand{min-width:0;flex:1}.brand h1{font-size:15px}
+ .brand p{display:block;font-size:10px}.tools{width:100%;margin-left:0}.tools input{width:auto;min-width:0;flex:1}
+ .tabs{width:100%;order:3}.tabs button{flex:1}.sidebar{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:10px 12px}
+ .sidebar .pal{max-width:180px;min-width:120px;padding:8px}.sidebar .pal .name{font-size:12px;white-space:nowrap}
+ .sidebar .pal img,.sidebar .pal .ava{width:32px;height:32px}.sidebar .pal .name{overflow:hidden;text-overflow:ellipsis}
+ .main{padding:16px 12px 40px}.filters{gap:8px}.filters .chips{max-width:100%;overflow-x:auto}.chip{padding:5px 10px;white-space:nowrap}
+ .card{padding:14px 12px;gap:10px}.card .date{width:54px}.card .date b{font-size:13px}.card .date span{font-size:10px;display:block}
+ .card .stampbox{width:46px}.card .stampbox img,.card .stampbox .none{width:44px;height:44px}.card .stampbox span{font-size:9px}
+ .card .line{gap:5px}.sender{font-size:12px}.badge{font-size:10px;padding:1px 5px}.card .excerpt{font-size:12px}
+ .stampgrid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px}.stampcard img{width:84px;height:84px}
+ .overlay{padding:12px}.paper{max-height:calc(100dvh - 24px);padding:34px 20px 24px;border-radius:14px}
+ .paper-head{gap:12px}.paper-head .stamp img{width:60px;height:60px}.paper-head .stamp{max-width:76px}
+ .paper-head .who{font-size:16px}.paper-head .stamp span{overflow-wrap:anywhere}.letter-body{font-size:15px}
+ .paper-foot{gap:8px}.paper-foot .spacer{display:none}.paper-foot .btn{padding:7px 10px;font-size:12px}
+ .panel{padding:16px 12px}.statrow{grid-template-columns:1fr 1fr;gap:10px}.stat{padding:14px}.stat b{font-size:25px}
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="seal">邮</span>
+    <div>
+      <h1>Slowly 笔友档案馆</h1>
+      <p id="sub">正在读取本地档案…</p>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-view="letters" class="on">信件</button>
+    <button data-view="stamps">邮票</button>
+    <button data-view="archive">档案馆</button>
+  </nav>
+  <div class="tools">
+    <input id="q" type="search" placeholder="搜索正文、笔友、邮票…" autocomplete="off">
+    <button id="chooseRoot">切换资料目录</button>
+    <button id="about" title="离线档案使用说明">阅读说明</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="pals"></aside>
+  <main class="main">
+    <div class="filters" id="filters"></div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+
+<div class="overlay" id="reader" hidden>
+  <div class="mask" data-close></div>
+  <article class="paper" id="paper" role="dialog" aria-modal="true" aria-label="阅读信件">
+    <button class="icon-btn close" data-close aria-label="关闭">✕</button>
+    <div class="paper-inner" id="paperInner"></div>
+  </article>
+</div>
+
+<div class="overlay" id="profile" hidden>
+  <div class="mask" data-close></div>
+  <article class="paper profile-paper" role="dialog" aria-modal="true" aria-label="笔友资料">
+    <button class="icon-btn close" data-close aria-label="关闭">✕</button>
+    <div id="profileInner"></div>
+  </article>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script>
+const DATA = /*__PAYLOAD__*/ null;
+const L=DATA.letters, P=DATA.pals;
+const M=DATA.media||{images:{},stamps:[],letters:{},pals:{}};
+const $=s=>document.querySelector(s);
+const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e};
+const button=(text,cls,fn)=>{const e=node('button',cls,text);e.type='button';e.onclick=fn;return e};
+const S={view:'letters',pal:null,q:'',dir:'',year:'',sort:'desc',palSort:'zh',stamp:null,current:[],idx:-1};
+try{S.palSort=localStorage.getItem('slowlyPalSort')||'zh'}catch(e){}
+let focusBefore=null;
+function image(host,key,cls,alt){
+  const src=M.images[key];
+  if(typeof src!=='string'||!/^data:image\/(png|jpeg|webp|gif);base64,/.test(src))return false;
+  const e=node('img',cls);e.src=src;e.alt=alt||'';e.loading='lazy';
+  e.onerror=()=>{e.replaceWith(node('span','image-missing',alt?'图片暂不可用：'+alt:'图片暂不可用'))};host.append(e);return true;
+}
+function link(host,label,url,cls='btn'){
+  if(typeof url!=='string'||!url.startsWith('file:///'))return;
+  const a=node('a',cls,label);a.href=url;a.target='_blank';a.rel='noopener';host.append(a);
+}
+function visual(r){return M.letters[r.id]||{}}
+function stampOf(r){return M.stamps.find(s=>s.id===visual(r).stamp)}
+function photoCount(r){return (visual(r).photos||[]).length||r.att_files||0}
+function avatar(host,p){
+  const data=M.pals[p.name]||{};
+  if(!image(host,data.avatar,'',p.name+'的头像'))host.append(node('span','ava',p.name.slice(0,1)));
+}
+function badge(host,label,cls=''){if(label)host.append(node('span','badge '+cls,label))}
+function readBadge(host,r){if(r.read_mark)badge(host,r.direction==='in'?'已读':'对方已读','read')}
+function palOf(name){return P.find(p=>p.name===name)}
+function sortedPals(){
+  return P.slice().sort((a,b)=>{
+    if(S.palSort==='recent')return b.last.localeCompare(a.last);
+    if(S.palSort==='most')return b.letters-a.letters;
+    const cjk=n=>/[\u3400-\u9fff\u3040-\u312f]/.test(n[0]||'');
+    const aa=cjk(a.name),bb=cjk(b.name);
+    if(aa!==bb)return (S.palSort==='en'?!aa:aa)?-1:1;
+    return a.name.localeCompare(b.name,'zh',{numeric:true});
+  });
+}
+function matches(r,withSearch=true){
+  if(S.pal&&r.pal!==S.pal)return false;
+  if(S.year&&String(r.year)!==S.year)return false;
+  if(S.dir==='public'&&!r.is_public)return false;
+  if(S.dir==='photos'&&!photoCount(r))return false;
+  if(['in','out'].includes(S.dir)&&r.direction!==S.dir)return false;
+  if(S.stamp&&visual(r).stamp!==S.stamp)return false;
+  const q=S.q.trim().toLowerCase();
+  return !withSearch||!q||[r.body,r.pal,r.sender,r.country,r.file,(stampOf(r)||{}).name].join(' ').toLowerCase().includes(q);
+}
+function rows(){return L.filter(r=>matches(r)).sort((a,b)=>(S.sort==='asc'?1:-1)*a.dt.localeCompare(b.dt))}
+function setView(view){S.view=view;S.idx=-1;render();window.scrollTo({top:0})}
+function toast(text){const e=$('#toast');e.textContent=text;e.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>e.hidden=true,4200)}
+function empty(host,title,detail){const e=node('div','empty');e.append(node('b','',title),node('span','',detail));host.append(e)}
+
+function sidebar(){
+  const host=$('#pals');host.replaceChildren();
+  const h=node('h2','','笔友');const select=node('select');select.setAttribute('aria-label','笔友排序');
+  [['zh','中文在前'],['en','英文在前'],['recent','最新通信优先'],['most','信件最多']].forEach(([key,label])=>{const o=node('option','',label);o.value=key;select.append(o)});
+  select.value=S.palSort;select.onchange=()=>{S.palSort=select.value;try{localStorage.setItem('slowlyPalSort',S.palSort)}catch(e){}sidebar()};h.append(select);host.append(h);
+  const all=button('','pal'+(!S.pal?' on':''),()=>{S.pal=null;S.stamp=null;if(S.view==='archive')S.view='letters';render()});
+  all.append(node('span','ava','全'));const meta=node('span','meta');meta.append(node('span','name','全部笔友'),node('span','sub',P.length+' 位 · '+L.length+' 封信'));all.append(meta);host.append(all);
+  sortedPals().forEach(p=>{
+    const b=button('','pal'+(S.pal===p.name?' on':''),()=>{S.pal=p.name;S.stamp=null;if(S.view==='archive')S.view='letters';render()});avatar(b,p);
+    const m=node('span','meta');const name=node('span','name',p.name);
+    if(p.gap==='missing')name.append(node('span','dot'+(p.stillWriting?' live':'')));
+    m.append(name,node('span','sub',p.letters+' 封信 · '+((M.pals[p.name]||{}).profile?.country||'本地珍藏')));
+    if(p.stillWriting)m.append(node('span','note live','仍在通信'));
+    if(p.farewellSent)m.append(node('span','note bye','已发离别信'));
+    if(p.public)m.append(node('span','note pub',p.public+' 封公开信'));
+    b.append(m);host.append(b);
+  });
+}
+function filters(count){
+  const host=$('#filters');host.replaceChildren();if(S.view==='archive')return;
+  const chips=node('div','chips');
+  [['','全部'],['in','来信'],['out','去信'],['public','公开信'],['photos','有附件']].forEach(([key,label])=>{const b=button(label,'chip'+(S.dir===key?' on':''),()=>{S.dir=key;render()});b.setAttribute('aria-pressed',S.dir===key?'true':'false');chips.append(b)});host.append(chips);
+  function select(id,options,value,fn){const e=node('select');e.id=id;e.setAttribute('aria-label',id==='yearSel'?'信件年份':'信件顺序');options.forEach(([v,t])=>{const o=node('option','',t);o.value=v;e.append(o)});e.value=value;e.onchange=()=>fn(e.value);host.append(e)}
+  select('yearSel',[['','全部年份'],...[...new Set(L.map(r=>r.year))].sort((a,b)=>b-a).map(y=>[String(y),y?y+' 年':'日期待确认'])],S.year,v=>{S.year=v;render()});
+  if(S.view==='letters')select('sortSel',[['desc','新 → 旧'],['asc','旧 → 新']],S.sort,v=>{S.sort=v;render()});
+  if(S.stamp){const s=M.stamps.find(s=>s.id===S.stamp);const chip=node('span','badge','邮票：'+(s?.name||''));chip.append(button('×','clear',()=>{S.stamp=null;render()}));host.append(chip)}
+  if(S.pal||S.year||S.dir||S.q||S.stamp)host.append(button('清除筛选','clear',()=>{Object.assign(S,{pal:null,year:'',dir:'',q:'',stamp:null});$('#q').value='';render()}));
+  if(S.pal)host.append(button('笔友信息','ghost info',()=>openProfile(S.pal)));
+  host.append(node('span','count',count));
+}
+function letterCard(r,i){
+  const card=button('','card',()=>openLetter(i));card.dataset.id=r.id;
+  const date=node('span','date');date.append(node('b','',r.dt?r.dt.slice(5,10):'日期待确认'),node('span','',r.dt.slice(0,4)+' · '+r.dt.slice(11)));
+  const body=node('span','body');const line=node('span','line');line.append(node('span','sender '+r.direction,r.sender||r.pal));badge(line,r.direction==='unknown'?'方向待确认':(r.direction==='in'?'来信':'去信'));readBadge(line,r);if(r.is_public)badge(line,'公开信','public');if(photoCount(r))badge(line,'图 '+photoCount(r));
+  body.append(line,node('span','excerpt',r.body.replace(/\s+/g,' ').slice(0,160)||'（PDF 暂无可提取的正文，可打开原件阅读）'));
+  const sub=node('span','sub');[r.pal,r.country,r.chars+' 字'].filter(Boolean).forEach(text=>sub.append(node('span','',text)));body.append(sub);
+  const stamp=node('span','stampbox'),s=stampOf(r);if(!s||!image(stamp,s.image,'',s.name))stamp.append(node('span','none'));stamp.append(node('span','',s?.name||'未记录邮票'));
+  card.append(date,body,stamp);return card;
+}
+function letters(){S.current=rows();filters('共 '+S.current.length+' 封');const host=$('#list');host.className='list';host.replaceChildren();if(!S.current.length){empty(host,'没有匹配的信件','换个关键词，或清除筛选再看看。');return}S.current.forEach((r,i)=>host.append(letterCard(r,i)))}
+function stamps(){
+  S.current=[];const q=S.q.trim().toLowerCase();
+  const list=M.stamps.filter(s=>{
+    if(S.pal&&s.pal!==S.pal)return false;
+    if(S.stamp&&s.id!==S.stamp)return false;
+    if(q&&![s.name,s.pal].join(' ').toLowerCase().includes(q))return false;
+    return !(S.year||S.dir)||L.some(r=>(s.letters||[]).includes(r.id)&&matches(r,false));
+  });filters('共 '+list.length+' 枚');const host=$('#list');host.className='list list-wide';host.replaceChildren();
+  if(!list.length){empty(host,'没有符合条件的邮票','本地已有的邮票图片会收录在这里。');return}
+  const grid=node('div','stampgrid');list.forEach(s=>{const c=button('','stampcard',()=>{S.stamp=s.id;S.pal=s.pal;S.q='';$('#q').value='';S.dir='';S.year='';setView('letters')});image(c,s.image,'',s.name);c.append(node('div','nm',s.name),node('div','sub',s.pal+' · '+(s.letters.length?s.letters.length+' 封关联信件':'未关联')));grid.append(c)});host.append(grid);
+}
+function archive(){
+  S.current=[];filters('');const host=$('#list');host.className='list list-wide';host.replaceChildren();
+  const stats=node('div','statrow');[[P.length,'位笔友'],[L.length,'封信件'],[M.stamps.length,'枚邮票记录'],[L.filter(r=>r.direction==='in').length+' / '+L.filter(r=>r.direction==='out').length,'来信 / 去信']].forEach(([n,label])=>{const e=node('div','stat');e.append(node('b','',n),node('span','',label));stats.append(e)});host.append(stats);
+  const panel=node('div','panel');panel.append(node('h3','','按年份'),node('div','hint','每一段通信落在哪一年'));
+  const counts={};L.forEach(r=>counts[r.year]=(counts[r.year]||0)+1);const max=Math.max(1,...Object.values(counts));const bars=node('div','bars');
+  Object.entries(counts).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([year,n])=>{const bar=node('div','bar');const fill=node('i');fill.style.height=Math.max(6,Math.round(n/max*92))+'%';bar.append(node('b','',n),fill,node('span','',year==='0'?'未知':year));bars.append(bar)});panel.append(bars);host.append(panel);
+  const overview=node('div','panel');overview.append(node('h3','','档案馆总览'),node('div','hint','完整性以最近一次保存的本地记录为准。没有核对记录时显示“未检查”。'));
+  const scroll=node('div','table-scroll');const table=node('table');const head=node('thead'),tr=node('tr');['笔友','本地信件','邮票','最新一封','个人资料','完整性','打开'].forEach(t=>tr.append(node('th','',t)));head.append(tr);table.append(head);const body=node('tbody');
+  sortedPals().forEach(p=>{const tr=node('tr');const who=node('td');const name=node('span','who');avatar(name,p);name.append(node('span','',p.name));who.append(name);tr.append(who);
+    const profile=(M.pals[p.name]||{}).profile||{};[p.letters+' 封',M.stamps.filter(s=>s.pal===p.name).length+' 枚',p.last||'—',Object.keys(profile).length?'已存':'未保存',p.gapLabel||'未检查'].forEach(t=>tr.append(node('td','',t)));
+    const actions=node('td');actions.append(button('资料卡','ghost',()=>openProfile(p.name)));(M.pals[p.name]?.links||[]).forEach(l=>link(actions,l.label,l.url,'ghost'));tr.append(actions);body.append(tr);
+  });table.append(body);scroll.append(table);overview.append(scroll);host.append(overview);
+}
+function render(){
+  sidebar();document.querySelectorAll('#tabs button').forEach(b=>{const active=b.dataset.view===S.view;b.classList.toggle('on',active);b.setAttribute('aria-pressed',String(active))});
+  if(S.view==='stamps')stamps();else if(S.view==='archive')archive();else letters();
+}
+function showOverlay(id){
+  const active=$('#reader').hidden&&$('#profile').hidden;
+  if(active)focusBefore=document.activeElement;
+  $('#reader').hidden=true;$('#profile').hidden=true;$(id).hidden=false;document.body.style.overflow='hidden';$(id+' button[data-close]').focus();
+}
+function closeOverlay(){
+  $('#reader').hidden=true;$('#profile').hidden=true;document.body.style.overflow='';
+  if(focusBefore?.isConnected)focusBefore.focus();focusBefore=null;
+}
+function openLetter(i){
+  S.idx=i;const r=S.current[i];if(!r)return;const media=visual(r),s=stampOf(r),p=M.pals[r.pal]||{};
+  const host=$('#paperInner');host.replaceChildren();const header=node('header','paper-head');const who=node('div');who.append(node('div','who',r.sender||r.pal));
+  const when=node('div','when',r.dt+(r.country?' · '+r.country:''));when.append(node('br'),node('span','',r.pal+'的'+(r.direction==='unknown'?'方向待确认':(r.direction==='in'?'来信':'去信'))+' '));readBadge(when,r);if(r.is_public)badge(when,'公开信','public');when.append(node('span','',' · '+r.chars+' 字'));who.append(when);header.append(who);
+  if(s){const stamp=node('div','stamp');image(stamp,s.image,'',s.name);stamp.append(node('span','',s.name));header.append(stamp)}host.append(header);
+  const body=node('div','letter-body');r.body.split(/\n{2,}/).filter(t=>t.trim()).forEach(text=>body.append(node('p','',text)));if(!r.body.trim())body.append(node('p','','这份 PDF 暂无可提取的文字，请打开原件阅读。'));
+  if(media.photos?.length){const figs=node('div','letter-figs');media.photos.forEach(key=>image(figs,key,'','信件附件'));body.append(figs)}else if(r.att_files)body.append(node('p','hint','本地记录有 '+r.att_files+' 张附件，当前图片不可用。'));
+  if(r.char_drift!=null&&r.char_drift<-60)body.append(node('p','hint','正文核对提示：提取的文字可能不完整，请对照原 PDF 阅读。'));
+  host.append(body);const foot=node('footer','paper-foot');foot.append(node('span','','第 '+(i+1)+' / '+S.current.length+' 封'),node('span','spacer'));
+  const nav=node('div','nav');[['‹',-1,'上一封'],['›',1,'下一封']].forEach(([text,step,label])=>{const b=button(text,'',()=>openLetter(i+step));b.setAttribute('aria-label',label);b.disabled=i+step<0||i+step>=S.current.length;nav.append(b)});foot.append(nav);
+  link(foot,'打开 PDF',media.pdf,'btn primary');(p.links||[]).forEach(l=>link(foot,l.label,l.url));foot.append(button('笔友资料','btn',()=>openProfile(r.pal)));host.append(foot);showOverlay('#reader');$('#paper').scrollTop=0;
+}
+function openProfile(name){
+  const p=palOf(name);if(!p)return;const data=M.pals[name]||{},profile=data.profile||{};const host=$('#profileInner');host.replaceChildren();
+  const top=node('div','profile-top');avatar(top,p);const heading=node('div');heading.append(node('h2','',name),node('p','',[profile.country,profile.gender,Array.isArray(profile.interests)?profile.interests.join('、'):profile.interests].filter(Boolean).join(' · ')||'本地笔友档案'));top.append(heading);host.append(top);
+  const facts=node('div','facts');function fact(label,value){if(value==null||value==='')return;const e=node('div','fact');e.append(node('b','',label),node('span','',typeof value==='object'?JSON.stringify(value):String(value)));facts.append(e)}
+  fact('本地信件',p.letters+' 封');fact('邮票',M.stamps.filter(s=>s.pal===name).length+' 枚');fact('最新通信',p.last);fact('完整性',p.gapLabel||'未检查');if(p.stillWriting)fact('通信状态','仍在通信');if(p.farewellSent)fact('通信状态','已发离别信');
+  if(profile.facts&&typeof profile.facts==='object')Object.entries(profile.facts).forEach(([k,v])=>fact(k,v));if(profile.deactivated)fact('账户状态','已停用');host.append(facts,node('div','bio',profile.bio||'本地暂无笔友自我介绍。'));
+  const links=node('div','profile-links');(data.links||[]).forEach(l=>link(links,l.label,l.url));host.append(links);showOverlay('#profile');$('#profile .paper').scrollTop=0;
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeOverlay);
+$('#q').oninput=e=>{S.q=e.target.value;render()};
+$('#chooseRoot').onclick=()=>{if(window.webkit?.messageHandlers?.archive){window.webkit.messageHandlers.archive.postMessage('choose')}else{toast('请回到 IDE 或 WorkBuddy 对话，告诉 AI 新的信件目录，再生成档案。独立 HTML 用于阅读已有档案。')}};
+$('#about').onclick=()=>toast('这是保存在本地的档案快照。新增资料后，请再次生成并重新打开；原 PDF 与合集入口需要原文件仍在原位置。');
+document.addEventListener('keydown',e=>{
+  if($('#reader').hidden&&$('#profile').hidden)return;
+  if(e.key==='Escape'){e.preventDefault();closeOverlay();return}
+  if(e.key==='Tab'){
+    const overlay=$('#profile').hidden?$('#reader'):$('#profile');const focusables=[...overlay.querySelectorAll('button:not(:disabled),a[href]')];const first=focusables[0],last=focusables.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+  if(!$('#reader').hidden&&['ArrowLeft','ArrowRight'].includes(e.key)){
+    const i=S.idx+(e.key==='ArrowLeft'?-1:1);if(i>=0&&i<S.current.length){e.preventDefault();openLetter(i)}
+  }
+});
+const topbar=$('.topbar');const syncTopbar=()=>document.documentElement.style.setProperty('--topbar-h',topbar.offsetHeight+'px');new ResizeObserver(syncTopbar).observe(topbar);
+$('#sub').textContent=P.length+' 位笔友 · '+L.length+' 封信 · '+M.stamps.length+' 枚邮票记录 · 离线珍藏';
+render();syncTopbar();
+
+</script>
+</body>
+</html>

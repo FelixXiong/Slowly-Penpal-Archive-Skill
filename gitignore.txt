@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# 真实信件属于个人隐私：不要提交库本体、数据库、JSONL 与生成页面
+Slowly离线档案/
+*.db
+*.jsonl
+build.json
+index.html
+library_root.txt.local
+
+# 图文索引内含信件附件和笔友资料
+media.json
+
+# 本机路径与本机构建的桌面入口
+library_out.txt.local
+*.app/
