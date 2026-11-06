@@ -42,20 +42,36 @@ Note: You will need to verify compatibility with your manually exported files.
 Save letters as PDFs → Create a folder for each pen pal (keep letters from the same person together) → Optionally ask AI to standardize filenames → Have the skill generate the archive → Open it and read.
 
 ## Getting started
-1. Extract the skill ZIP and place the entire `slowly-offline-archive` folder in your tool’s configured skills directory, or use its local skill import feature. Keep `SKILL.md` and `scripts/`; do not copy just a single Markdown file.
+1. Download this repository (green **Code** button → *Download ZIP*, or `git clone`) and unpack it. You get a folder that contains `SKILL.md` and `scripts/` (from a ZIP it is named `Slowly-Penpal-Archive-Skill-main`). Move that **whole folder** into the skills directory your tool uses and rename it to `slowly-penpal-archive`, or use the tool's local skill import feature.
+   Do not copy `SKILL.md` alone: without `scripts/` next to it the skill cannot run `scripts/pdf_index.py`.
 2. In an office tool that supports Skills (WorkBuddy, Qianwen Office / 千问办公, or Doubao Work / 豆包工作), or an IDE, say:
 
-> Use slowly-offline-archive to organize the PDFs in (the path where I saved my letters) into an offline archive. Preserve the original files and open the archive entry point when it is ready.
+> Use slowly-penpal-archive to organize the PDFs in (the path where I saved my letters) into an offline archive. Preserve the original files and open the archive entry point when it is ready.
 
 To add more letters:
 
-> Use the Slowly offline archive skill. My source directory is (the path where I saved my letters). Append the new letters to the existing archive.
+> Use slowly-penpal-archive. My source directory is (the path where I saved my letters). Append the new letters to the existing archive.
 
 The first run requires a host environment capable of running Python. If `pypdf` is missing, the AI will handle it as permitted by that environment.
 
 Fetching dependencies for the first time may require an internet connection. Archiving and reading do not access Slowly.
 
 After generation, open the local `index.html` to read. You do not need to keep the AI or a local service running afterward.
+
+## Run it without an AI host
+Two commands are enough:
+
+```bash
+python3 -m pip install -r requirements.txt
+
+python3 scripts/pdf_index.py --root '<letters folder>' --out '<output folder>'
+open '<output folder>/index.html'    # Windows: start / Linux: xdg-open
+```
+
+- Without `--root` it reads `~/Desktop/笔友库`. If that folder is missing the script tells you where to point it instead of guessing.
+- Without `--out` results go to `~/Desktop/Slowly离线档案`. Keep one output folder per letters folder — the next run only adds what changed.
+- Other flags: `--pal '<pen pal>'`, `--full`, `--pdf-only`, `--verify-data`, `--sql '<query>'`.
+- Verified on Python 3.9 / 3.12 / 3.14 with identical data. Self-checks: `python3 -m unittest discover -s scripts -t scripts` (32 tests) and `bash scripts/audit_offline.sh`.
 
 ## Generated files
 
@@ -78,6 +94,10 @@ A preview of the pen-pal archive:
 The skill itself does not access the internet, automate the Slowly website, or read your login session. You do not need to sign in to Slowly. It only reads letter PDFs you have already saved, extracts their text with `pypdf`, and generates a searchable SQLite database and a self-contained, single-file web archive with embedded data that you can open by double-clicking.
 
 Dependency: `pypdf`. Installing it for the first time requires an internet connection to download the package.
+
+You do not have to take this on faith: `bash scripts/audit_offline.sh` scans the scripts, the page template and the generated archive, and fails on any network stack, external reference or browser-automation call. The generated `index.html` carries zero external `link`/`script`/`img` references.
+
+One caution: `index.html` embeds your letter bodies and links every letter to its absolute path on your disk. Keep the generated page, `*.db`, `letters.jsonl` and `media.json` to yourself — they are git-ignored on purpose.
 
 ## FAQ
 **Q: What if I change the directory where my letters are stored?**

@@ -42,20 +42,34 @@
 儲存信件 PDF → 依筆友建立資料夾（同一位筆友的多封信放在一起）→ 選用：請 AI 協助統一檔名 → 讓 skill 產生檔案館 → 開啟閱讀。
 
 ## 開始使用
-1. 解壓縮 skill ZIP，將整個 `slowly-offline-archive` 資料夾放到工具設定的 skills 目錄，或使用工具提供的本機技能匯入功能。請保留 `SKILL.md` 與 `scripts/`，不要只複製單一 Markdown 檔案。
+1. 下載本仓库（綠色 Code 按鈕 → Download ZIP，或 `git clone`）並解壓縮，會得到一個包含 `SKILL.md` 與 `scripts/` 的資料夾（ZIP 解壓後名為 `Slowly-Penpal-Archive-Skill-main`）。把這個**資料夾整體**放進工具設定的 skills 目錄，並重新命名為 `slowly-penpal-archive`；也可以使用工具提供的本機技能匯入功能。
+   不要只複製 `SKILL.md`——旁邊沒有 `scripts/` 時，技能找不到 `scripts/pdf_index.py`，跑不起來。
 2. 對支援 Skills 的辦公工具（WorkBuddy、千问办公或豆包工作）或 IDE 說：
 
-> 使用 slowly-offline-archive（Slowly 離線歸檔技能），將（你的信件儲存路徑）裡的 PDF 整理成離線檔案館，保留原始檔案，完成後幫我開啟入口。
+> 使用 slowly-penpal-archive（Slowly 離線歸檔技能），將（你的信件儲存路徑）裡的 PDF 整理成離線檔案館，保留原始檔案，完成後幫我開啟入口。
 
 追加信件：
 
-> 使用 Slowly 離線歸檔 skill，資料目錄是（你的信件儲存路徑），將新信追加到現有檔案館。
+> 使用 slowly-penpal-archive，資料目錄是（你的信件儲存路徑），將新信追加到現有檔案館。
 
 首次執行仍需要可執行 Python 的宿主環境；若缺少 `pypdf`，AI 會依該環境允許的方式處理。
 
 首次取得相依套件可能需要連網，歸檔與閱讀流程不會存取 Slowly。
 
 產生後，開啟本機 `index.html` 即可閱讀，之後不需要讓 AI 或本機服務持續執行。
+
+## 不想用 AI？兩條命令也夠
+```bash
+python3 -m pip install -r requirements.txt
+
+python3 scripts/pdf_index.py --root '<信件目錄>' --out '<輸出目錄>'
+open '<輸出目錄>/index.html'    # Windows 用 start，Linux 用 xdg-open
+```
+
+- 不傳 `--root` 時讀 `~/Desktop/笔友库`；目錄不存在會直接告訴你改哪裡，不會猜。
+- 不傳 `--out` 時寫到 `~/Desktop/Slowly离线档案`。同一個信件目錄以後都用同一個 `--out`，就是增量追加。
+- 常用參數：`--pal '<筆友名>'`、`--full`、`--pdf-only`、`--verify-data`、`--sql '<查詢>'`。
+- 已在 Python 3.9 / 3.12 / 3.14 跑通同一份資料；自我檢查：`python3 -m unittest discover -s scripts -t scripts`（32 項）與 `bash scripts/audit_offline.sh`（離線自證）。
 
 ## 產生結果
 
@@ -78,6 +92,10 @@
 本 skill 本身不連網、不自動操作 Slowly 網頁、不讀取登入狀態，也不需要登入 Slowly。它只讀取你已儲存的「信件 PDF」，透過 `pypdf` 還原內文，產生可搜尋的 SQLite 資料庫，以及單一檔案、內嵌資料、按兩下即可開啟的網頁檔案館。
 
 相依套件：`pypdf`。首次安裝需要連網下載。
+
+這條邊界可以自證，不必只聽我說：`bash scripts/audit_offline.sh` 會掃描腳本、模板與產生頁面，命中網路堆疊、外部連結或瀏覽器自動化關鍵字即報錯退出。產生的 `index.html` 外部 `link`/`script`/`img` 引用為 0。
+
+提醒：`index.html` 內嵌了信件全文，「打開 PDF」按鈕指向你本機的絕對路徑。請只在本機閱讀，不要把產生頁面（以及 `*.db`、`letters.jsonl`、`media.json`）轉發給別人或提交到倉庫——`.gitignore` 已預設排除。
 
 ## 常見問題
 **Q：更換信件目錄時該怎麼辦？**
